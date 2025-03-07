@@ -67,7 +67,7 @@ class IcmpHelperLibrary:
         __ipTimeout = 30
         __ttl = 255                     # Time to live
 
-        __DEBUG_IcmpPacket = False      # Allows for debug output
+        __DEBUG_IcmpPacket = True      # Allows for debug output
 
         # ############################################################################################################ #
         # IcmpPacket Class Getters                                                                                     #
@@ -208,8 +208,35 @@ class IcmpHelperLibrary:
 
         def __validateIcmpReplyPacketWithOriginalPingData(self, icmpReplyPacket):
             # Hint: Work through comparing each value and identify if this is a valid response.
-            icmpReplyPacket.setIsValidResponse(True)
-            pass
+
+            if self.getDataRaw() == icmpReplyPacket.getIcmpData():
+                icmpReplyPacket.setIcmpDataIsValid(True)
+            if self.getPacketIdentifier() == icmpReplyPacket.getIcmpIdentifier():
+                icmpReplyPacket.setIcmpIdentifierIsValid(True)
+
+            if str(self.getPacketSequenceNumber()) == str(icmpReplyPacket.getIcmpSequenceNumber()):
+                icmpReplyPacket.setIcmpSequenceNumberIsValid(True)
+
+            if (icmpReplyPacket.getIcmpSequenceNumberIsValid() and icmpReplyPacket.getIcmpIdentifierIsValid()\
+                  and icmpReplyPacket.getIcmpDataIsValid()):
+                
+                icmpReplyPacket.setIsValidResponse(True)
+
+            if self.__DEBUG_IcmpPacket:
+                
+                print(f'Expected Sequence number: {self.getPacketSequenceNumber()}\
+                        Actual Sequence number: {icmpReplyPacket.getIcmpSequenceNumber()}\
+                        Match:{icmpReplyPacket.getIcmpSequenceNumberIsValid()}')
+
+                print(f'Expected ICMP Identifier: {self.getPacketIdentifier()}\
+                        Actual ICMP Identifier: {icmpReplyPacket.getIcmpIdentifier()}\
+                        Match:{icmpReplyPacket.getIcmpIdentifierIsValid()}')
+                
+                print(f'Expected Data: {self.getDataRaw()}\
+                        Actual Data: {icmpReplyPacket.getIcmpData()}\
+                        Match:{icmpReplyPacket.getIcmpDataIsValid()}')
+            
+        
 
         # ############################################################################################################ #
         # IcmpPacket Class Public Functions                                                                            #
@@ -307,50 +334,43 @@ class IcmpHelperLibrary:
             self.printIcmpPacketHeader_hex()
             self.printIcmpPacketData_hex()
 
-    # ################################################################################################################ #
-    # Class IcmpPacket_EchoReply                                                                                       #
-    #                                                                                                                  #
-    # References:                                                                                                      #
-    # http://www.networksorcery.com/enp/protocol/icmp/msg0.htm                                                         #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    #                                                                                                                  #
-    # ################################################################################################################ #
+
     class IcmpPacket_EchoReply:
-        # ############################################################################################################ #
-        # IcmpPacket_EchoReply Class Scope Variables                                                                   #
-        #                                                                                                              #
-        #                                                                                                              #
-        #                                                                                                              #
-        #                                                                                                              #
-        # ############################################################################################################ #
+        """
+        References: http://www.networksorcery.com/enp/protocol/icmp/msg0.htm   
+        """
+        # class scope vars
         __recvPacket = b''
         __isValidResponse = False
+        __IcmpIdentifierIsValid = False
+        __IcmpHeaderChecksumIsValid = False
+        __IcmpSequenceNumberIsValid = False
+        __IcmpDataIsValid = False
 
-        # ############################################################################################################ #
-        # IcmpPacket_EchoReply Constructors                                                                            #
-        #                                                                                                              #
-        #                                                                                                              #
-        #                                                                                                              #
-        #                                                                                                              #
-        # ############################################################################################################ #
+
         def __init__(self, recvPacket):
+
             self.__recvPacket = recvPacket
 
-        # ############################################################################################################ #
-        # IcmpPacket_EchoReply Getters                                                                                 #
-        #                                                                                                              #
-        #                                                                                                              #
-        #                                                                                                              #
-        #                                                                                                              #
-        # ############################################################################################################ #
+        def setIcmpDataIsValid(self, isValid):
+            self.__IcmpDataIsValid = isValid
+
+        def getIcmpDataIsValid(self):
+            return self.__IcmpDataIsValid
+
+        def setIcmpIdentifierIsValid(self, isValid):
+            self.__IcmpIdentifierIsValid = isValid
+
+        def getIcmpIdentifierIsValid(self):
+            return self.__IcmpIdentifierIsValid
+
+        def setIcmpSequenceNumberIsValid(self, isValid):
+            self.__IcmpSequenceNumberIsValid = isValid
+
+        def getIcmpSequenceNumberIsValid(self):
+            return self.__IcmpSequenceNumberIsValid
+
+    
         def getIcmpType(self):
             # Method 1
             # bytes = struct.calcsize("B")        # Format code B is 1 byte
@@ -523,8 +543,8 @@ def main():
 
 
     # Choose one of the following by uncommenting out the line
-    icmpHelperPing.sendPing("209.233.126.254")
-    # icmpHelperPing.sendPing("www.google.com")
+    # icmpHelperPing.sendPing("209.233.126.254")
+    icmpHelperPing.sendPing("www.google.com")
     # icmpHelperPing.sendPing("gaia.cs.umass.edu")
     # icmpHelperPing.traceRoute("164.151.129.20")
     # icmpHelperPing.traceRoute("122.56.99.243")
