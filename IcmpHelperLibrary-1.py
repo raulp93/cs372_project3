@@ -289,7 +289,7 @@ class IcmpHelperLibrary:
             result_value = False
             try:
 
-                print("sendto return val: ", mySocket.sendto(b''.join([self.__header, self.__data]), (self.__destinationIpAddress, 0)))
+                mySocket.sendto(b''.join([self.__header, self.__data]), (self.__destinationIpAddress, 0))
                 icmpHelper.incrementPacketsSent()                                                                  #increments packets sent
                 timeLeft = 5
                 pingStartTime = time.time()
@@ -309,8 +309,6 @@ class IcmpHelperLibrary:
                 else:
                     # Fetch the ICMP type and code from the received packet
                     icmpType, icmpCode = recvPacket[20:22]
-
-                    print(f'icmpType: {icmpType}, icmpCode: {icmpCode}')
 
                     if icmpType == 11:                          # Time Exceeded
                         print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d    %s" %
@@ -337,6 +335,7 @@ class IcmpHelperLibrary:
                                       addr[0]
                                   )
                               )
+                        print('----------------')
 
 
                     if icmpType == 0:                         # Echo Reply
@@ -358,6 +357,7 @@ class IcmpHelperLibrary:
                         
             except timeout:
                 print("  *        *        *        *        *    Request timed out (By Exception).")
+                print('----------------')
             finally:
                 mySocket.close()
                 return result_value
@@ -531,7 +531,7 @@ class IcmpHelperLibrary:
     __listOfRTTs = []
     __packetsReceived = 0
     __packetsSent = 0
-    __reachedDest = False
+
 
     # ################################################################################################################ #
     # IcmpHelperLibrary Private Functions                                                                              #
@@ -616,7 +616,7 @@ class IcmpHelperLibrary:
         print("sendIcmpTraceRoute Started...") if self.__DEBUG_IcmpHelperLibrary else 0
         # Build code for trace route here
 
-        MAX_HOPS = 30
+        MAX_HOPS = 50
         current_hop = 0
         destination_found = False
  
@@ -645,6 +645,8 @@ class IcmpHelperLibrary:
             icmpPacket.printIcmpPacketHeader_hex() if self.__DEBUG_IcmpHelperLibrary else 0
             icmpPacket.printIcmpPacket_hex() if self.__DEBUG_IcmpHelperLibrary else 0
             # we should be confirming values are correct, such as identifier and sequence number and data
+        
+        print("MAX Hops Achieved: Destination was unreachable.")
             
 
 
@@ -689,14 +691,19 @@ def main():
     # Choose one of the following by uncommenting out the line
     # icmpHelperPing.sendPing("209.233.126.254")
     # icmpHelperPing.sendPing("www.google.com")
-    # icmpHelperPing.sendPing("122.56.99.243")
-    icmpHelperPing.sendPing("164.151.129.20")
+    # icmpHelperPing.sendPing("193.0.14.129")          # RIPE Network Coordination Centre (based in Amsterdam)
+    icmpHelperPing.sendPing("146.83.205.200")        # Universidad de Chile (Santiago, Chile)
+
+    # icmpHelperPing.sendPing("122.56.99.243")         # is based out of Sidney, Australia
+    # icmpHelperPing.sendPing("164.151.129.20")
     # icmpHelperPing.sendPing("gaia.cs.umass.edu")
     # icmpHelperPing.traceRoute("164.151.129.20")
     # icmpHelperPing.traceRoute("122.56.99.243")
     # icmpHelperPing.traceRoute("raulpreciado.com")
     # icmpHelperPing.traceRoute("gaia.cs.umass.edu")
     # icmpHelperPing.traceRoute("google.com")
+    # icmpHelperPing.traceRoute("193.0.14.129")          # RIPE Network Coordination Centre (based in Amsterdam)
+    # icmpHelperPing.traceRoute("146.83.205.200")        # Universidad de Chile (Santiago, Chile)
 
 
 
